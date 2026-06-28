@@ -1,13 +1,18 @@
 import Link from "next/link"
+import Image from "next/image"
 
 export function SiteFooter() {
   return (
     <footer className="mt-auto border-t border-border bg-card">
       <div className="mx-auto flex max-w-6xl flex-col gap-6 px-4 py-10 sm:px-6 md:flex-row md:items-center md:justify-between">
         <div className="max-w-sm">
-          <div className="flex items-center gap-2 text-base font-extrabold tracking-tight text-foreground">
-            Ude<span className="text-primary">coupe</span>
-          </div>
+          <Image
+            src="/logo.png"
+            alt="Udecoupe"
+            width={140}
+            height={40}
+            className="h-10 w-auto"
+          />
           <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
             Hand-picked free Udemy courses with active coupons, verified and refreshed daily.
             We are not affiliated with Udemy.
