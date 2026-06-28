@@ -1,4 +1,5 @@
 import Link from "next/link"
+import { ThemeToggle } from "@/components/theme-toggle"
 
 export function SiteHeader() {
   return (
@@ -12,14 +13,14 @@ export function SiteHeader() {
             </svg>
           </span>
           <span className="text-lg font-extrabold tracking-tight text-foreground">
-            Coupon<span className="text-primary">Courses</span>
+            Ude<span className="text-primary">coupe</span>
           </span>
         </Link>
 
         <nav className="flex items-center gap-1 sm:gap-2">
           <Link
             href="/?sort=expiring"
-            className="rounded-lg px-3 py-2 text-sm font-medium text-muted-foreground transition hover:bg-secondary hover:text-foreground"
+            className="hidden rounded-lg px-3 py-2 text-sm font-medium text-muted-foreground transition hover:bg-secondary hover:text-foreground sm:block"
           >
             Expiring soon
           </Link>
@@ -29,6 +30,7 @@ export function SiteHeader() {
           >
             Get alerts
           </Link>
+          <ThemeToggle />
         </nav>
       </div>
     </header>
