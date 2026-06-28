@@ -21,6 +21,7 @@
     "react": "latest",
     "react-dom": "latest",
     "resend": "latest",
+    "sharp": "^0.35.2",
     "zod": "latest"
   },
   "devDependencies": {
