@@ -27,15 +27,16 @@ export async function sendVerificationEmail(email: string, token: string): Promi
   await client.emails.send({
     from: fromEmail,
     to: email,
-    subject: "Verify your subscription to Free Udemy Courses",
+    subject: "Verify your Udecoupe subscription",
     html: `
       <div style="font-family: -apple-system, Segoe UI, Roboto, sans-serif; max-width: 480px; margin: 0 auto; padding: 24px;">
+        <p style="font-size: 18px; font-weight: 800; color: #3a2f9e; margin: 0 0 16px;">Udecoupe</p>
         <h2 style="color: #111827; margin-bottom: 8px;">Confirm your subscription</h2>
         <p style="color: #4b5563; line-height: 1.6;">
           Verify your email to start receiving daily digests of free Udemy courses with active coupons.
         </p>
         <a href="${verifyUrl}"
-          style="display: inline-block; background: #6d28d9; color: #ffffff; text-decoration: none; padding: 12px 24px; border-radius: 8px; font-weight: 600; margin: 16px 0;">
+          style="display: inline-block; background: #3a2f9e; color: #ffffff; text-decoration: none; padding: 12px 24px; border-radius: 8px; font-weight: 600; margin: 16px 0;">
           Verify Email
         </a>
         <p style="color: #9ca3af; font-size: 13px; line-height: 1.6;">
