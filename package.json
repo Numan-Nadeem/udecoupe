@@ -1,0 +1,35 @@
+{
+  "name": "udecoupe-public",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
+    "db:setup": "node --env-file-if-exists=.env.development.local scripts/setup-db.mjs",
+    "db:seed": "node --env-file-if-exists=.env.development.local scripts/seed.mjs"
+  },
+  "dependencies": {
+    "next": "latest",
+    "react": "latest",
+    "react-dom": "latest",
+    "drizzle-orm": "latest",
+    "pg": "latest",
+    "@upstash/ratelimit": "latest",
+    "@upstash/redis": "latest",
+    "resend": "latest",
+    "date-fns": "latest",
+    "zod": "latest"
+  },
+  "devDependencies": {
+    "typescript": "latest",
+    "@types/node": "latest",
+    "@types/react": "latest",
+    "@types/react-dom": "latest",
+    "@types/pg": "latest",
+    "tailwindcss": "latest",
+    "@tailwindcss/postcss": "latest",
+    "postcss": "latest"
+  }
+}
