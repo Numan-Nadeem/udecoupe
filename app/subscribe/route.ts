@@ -85,7 +85,7 @@ export async function POST(req: NextRequest) {
       status: "ok",
     })
   } catch (err) {
-    console.error("[v0] subscribe failed:", err)
+    console.error("[v0] subscribe failed:", err instanceof Error ? err.message : String(err), err)
     return NextResponse.json(
       { message: "Something went wrong. Please try again.", status: "error" },
       { status: 500 },

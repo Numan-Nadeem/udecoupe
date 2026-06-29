@@ -5,10 +5,19 @@ const fromEmail = process.env.RESEND_FROM_EMAIL || "onboarding@resend.dev"
 
 let resend: Resend | null = null
 function getResend(): Resend | null {
-  if (resend) return resend
-  if (!resendApiKey) return null
-  resend = new Resend(resendApiKey)
-  return resend
+  if (resend !== undefined) return resend
+  if (!resendApiKey) {
+    resend = null
+    return null
+  }
+  try {
+    resend = new Resend(resendApiKey)
+    return resend
+  } catch (e) {
+    console.warn("[v0] Failed to initialize Resend:", e)
+    resend = null
+    return null
+  }
 }
 
 function baseUrl(): string {
