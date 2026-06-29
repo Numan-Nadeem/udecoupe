@@ -2,7 +2,7 @@ interface LogoProps {
   className?: string
 }
 
-export function Logo({ className = "h-7 w-auto" }: LogoProps) {
+export function Logo({ className = "h-6 w-auto" }: LogoProps) {
   return (
     <span className="flex items-center gap-1.5">
       <img src="/logo-icon.webp" alt="" aria-hidden="true" className={className} />
