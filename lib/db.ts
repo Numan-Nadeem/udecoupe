@@ -9,7 +9,7 @@ const globalForDb = globalThis as unknown as {
 export const pool =
   globalForDb.pool ??
   new Pool({
-    connectionString: process.env.DATABASE_URL,
+    connectionString: process.env.DATABASE_URL_UNPOOLED || process.env.DATABASE_URL,
     max: 5,
   })
 

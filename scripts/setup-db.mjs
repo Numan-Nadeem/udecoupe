@@ -2,7 +2,7 @@ import pg from "pg"
 
 const { Pool } = pg
 
-const pool = new Pool({ connectionString: process.env.DATABASE_URL })
+const pool = new Pool({ connectionString: process.env.DATABASE_URL_UNPOOLED || process.env.DATABASE_URL })
 
 const statements = [
   `CREATE TABLE IF NOT EXISTS courses (
