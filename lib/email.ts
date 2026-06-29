@@ -3,7 +3,7 @@ import { Resend } from "resend"
 const resendApiKey = process.env.RESEND_API_KEY
 const fromEmail = process.env.RESEND_FROM_EMAIL || "onboarding@resend.dev"
 
-let resend: Resend | null = null
+let resend: Resend | null | undefined = undefined
 function getResend(): Resend | null {
   if (resend !== undefined) return resend
   if (!resendApiKey) {
@@ -14,7 +14,7 @@ function getResend(): Resend | null {
     resend = new Resend(resendApiKey)
     return resend
   } catch (e) {
-    console.warn("[v0] Failed to initialize Resend:", e)
+    console.warn("[email] Failed to initialize Resend:", e)
     resend = null
     return null
   }
