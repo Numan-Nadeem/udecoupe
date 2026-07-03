@@ -90,9 +90,10 @@ export async function triggerDigestEmail(): Promise<{ sent: number; failed: numb
 
   if (verifiedSubscribers.length === 0) return { sent: 0, failed: 0 }
 
-  const sixHoursAgo = new Date(Date.now() - 6 * 60 * 60 * 1000)
+  // Window matches the cron cadence (daily on Vercel Hobby plan).
+  const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000)
   const newCourses = await db.query.courses.findMany({
-    where: and(gt(courses.createdAt, sixHoursAgo), eq(courses.isActive, true)),
+    where: and(gt(courses.createdAt, oneDayAgo), eq(courses.isActive, true)),
     orderBy: [desc(courses.createdAt)],
     limit: 5,
     columns: {
