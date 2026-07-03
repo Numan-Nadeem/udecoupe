@@ -1,7 +1,8 @@
 "use client"
 
-import { useRef, useState, useTransition } from "react"
-import { createSource, deleteSource, fetchSourceNow, toggleSourceActive } from "@/app/admin/(panel)/sources/actions"
+import { useEffect, useRef, useState, useTransition } from "react"
+import { useRouter } from "next/navigation"
+import { createSource, deleteSource, toggleSourceActive } from "@/app/admin/(panel)/sources/actions"
 
 type SourceRow = {
   id: number
@@ -12,13 +13,27 @@ type SourceRow = {
   failCount: number | null
 }
 
+type ProgressLine = {
+  key: number
+  text: string
+  tone: "info" | "success" | "warn" | "error"
+}
+
 export function SourcesManager({ rows }: { rows: SourceRow[] }) {
+  const router = useRouter()
   const formRef = useRef<HTMLFormElement>(null)
+  const logEndRef = useRef<HTMLDivElement>(null)
   const [isPending, startTransition] = useTransition()
   const [error, setError] = useState<string | null>(null)
   const [confirmId, setConfirmId] = useState<number | null>(null)
   const [fetchingId, setFetchingId] = useState<number | null>(null)
-  const [fetchResult, setFetchResult] = useState<string | null>(null)
+  const [progressLines, setProgressLines] = useState<ProgressLine[]>([])
+  const [progressSource, setProgressSource] = useState<string | null>(null)
+  const lineKey = useRef(0)
+
+  useEffect(() => {
+    logEndRef.current?.scrollIntoView({ behavior: "smooth", block: "nearest" })
+  }, [progressLines])
 
   function handleCreate(formData: FormData) {
     setError(null)
@@ -49,23 +64,84 @@ export function SourcesManager({ rows }: { rows: SourceRow[] }) {
     })
   }
 
-  function handleFetchNow(id: number, name: string) {
+  function pushLine(text: string, tone: ProgressLine["tone"]) {
+    lineKey.current += 1
+    setProgressLines((prev) => [...prev.slice(-199), { key: lineKey.current, text, tone }])
+  }
+
+  async function handleFetchNow(id: number, name: string) {
+    if (fetchingId !== null) return
     setError(null)
-    setFetchResult(null)
+    setProgressLines([])
+    setProgressSource(name)
     setFetchingId(id)
-    startTransition(async () => {
-      const res = await fetchSourceNow(id)
-      if (res.error) {
-        setError(res.error)
-      } else {
-        const added = res.added ?? 0
-        const failed = res.itemErrors ?? 0
-        setFetchResult(
-          `"${name}" fetched: ${added} course${added === 1 ? "" : "s"} added${failed > 0 ? `, ${failed} item error${failed === 1 ? "" : "s"}` : ""}.`,
-        )
+
+    try {
+      const response = await fetch(`/admin/sources/${id}/fetch`, { method: "POST" })
+      if (!response.ok || !response.body) {
+        const body = await response.json().catch(() => null)
+        setError(body?.error || `Fetch failed (${response.status})`)
+        return
       }
+
+      const reader = response.body.getReader()
+      const decoder = new TextDecoder()
+      let buffer = ""
+
+      while (true) {
+        const { done, value } = await reader.read()
+        if (done) break
+        buffer += decoder.decode(value, { stream: true })
+
+        const lines = buffer.split("\n")
+        buffer = lines.pop() ?? ""
+
+        for (const line of lines) {
+          if (!line.trim()) continue
+          let event: Record<string, unknown>
+          try {
+            event = JSON.parse(line)
+          } catch {
+            continue
+          }
+
+          if (event.type === "status") {
+            pushLine(String(event.message), "info")
+          } else if (event.type === "feed") {
+            pushLine(`Feed parsed: ${event.total} item${event.total === 1 ? "" : "s"} found.`, "info")
+          } else if (event.type === "item") {
+            const prefix = `[${event.index}/${event.total}]`
+            const title = String(event.title).slice(0, 70)
+            if (event.status === "duplicate") {
+              pushLine(`${prefix} Skipped (already in database): ${title}`, "info")
+            } else if (event.status === "enriching") {
+              pushLine(`${prefix} AI enriching: ${title}`, "info")
+            } else if (event.status === "added") {
+              pushLine(`${prefix} Added (active): ${title}`, "success")
+            } else if (event.status === "flagged") {
+              pushLine(
+                `${prefix} Added but FLAGGED for review: ${title}${event.detail ? ` — ${event.detail}` : ""}`,
+                "warn",
+              )
+            } else if (event.status === "error") {
+              pushLine(`${prefix} Failed: ${title}${event.detail ? ` — ${event.detail}` : ""}`, "error")
+            }
+          } else if (event.type === "done") {
+            pushLine(
+              `Done — ${event.added} added (${event.flagged} flagged), ${event.skipped} duplicates skipped, ${event.errors} error${event.errors === 1 ? "" : "s"}.`,
+              "success",
+            )
+          } else if (event.type === "fatal") {
+            pushLine(`Fetch failed: ${event.message}`, "error")
+          }
+        }
+      }
+      router.refresh()
+    } catch (err) {
+      setError(`Fetch failed: ${String(err)}`.slice(0, 300))
+    } finally {
       setFetchingId(null)
-    })
+    }
   }
 
   return (
@@ -117,10 +193,56 @@ export function SourcesManager({ rows }: { rows: SourceRow[] }) {
         </p>
       )}
 
-      {fetchResult && (
-        <p role="status" className="rounded-lg bg-primary/10 px-4 py-2 text-sm font-medium text-primary">
-          {fetchResult}
-        </p>
+      {(progressLines.length > 0 || fetchingId !== null) && (
+        <div className="rounded-xl border border-border bg-card">
+          <div className="flex items-center justify-between border-b border-border px-4 py-2.5">
+            <p className="text-sm font-semibold text-foreground">
+              {fetchingId !== null ? (
+                <span className="inline-flex items-center gap-2">
+                  <span className="h-2 w-2 animate-pulse rounded-full bg-primary" aria-hidden="true" />
+                  Fetching &quot;{progressSource}&quot;...
+                </span>
+              ) : (
+                `Fetch log — ${progressSource}`
+              )}
+            </p>
+            {fetchingId === null && (
+              <button
+                type="button"
+                onClick={() => {
+                  setProgressLines([])
+                  setProgressSource(null)
+                }}
+                className="text-xs font-medium text-muted-foreground transition hover:text-foreground"
+              >
+                Dismiss
+              </button>
+            )}
+          </div>
+          <div
+            role="log"
+            aria-live="polite"
+            className="max-h-64 overflow-y-auto px-4 py-3 font-mono text-xs leading-relaxed"
+          >
+            {progressLines.map((line) => (
+              <p
+                key={line.key}
+                className={
+                  line.tone === "success"
+                    ? "text-primary"
+                    : line.tone === "warn"
+                      ? "text-amber-600 dark:text-amber-400"
+                      : line.tone === "error"
+                        ? "text-destructive"
+                        : "text-muted-foreground"
+                }
+              >
+                {line.text}
+              </p>
+            ))}
+            <div ref={logEndRef} />
+          </div>
+        </div>
       )}
 
       {rows.length === 0 ? (
@@ -175,7 +297,7 @@ export function SourcesManager({ rows }: { rows: SourceRow[] }) {
                       <button
                         type="button"
                         onClick={() => handleFetchNow(s.id, s.name)}
-                        disabled={isPending}
+                        disabled={isPending || fetchingId !== null}
                         className="rounded-lg bg-primary/10 px-3 py-1.5 text-xs font-semibold text-primary transition hover:bg-primary/20 disabled:opacity-50"
                       >
                         {fetchingId === s.id ? "Fetching..." : "Fetch now"}
