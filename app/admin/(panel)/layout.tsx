@@ -2,6 +2,7 @@ import type { Metadata } from "next"
 import { redirect } from "next/navigation"
 import { getSession } from "@/lib/session"
 import { AdminSidebar } from "@/components/admin/admin-sidebar"
+import { FetchProgressProvider } from "@/components/admin/fetch-progress-provider"
 import { logoutAction } from "../login/actions"
 
 export const metadata: Metadata = {
@@ -32,9 +33,11 @@ export default async function AdminPanelLayout({
   )
 
   return (
-    <div className="flex min-h-screen flex-col bg-background md:flex-row">
-      <AdminSidebar logoutSlot={logoutButton} />
-      <main className="min-w-0 flex-1 p-4 md:p-8">{children}</main>
-    </div>
+    <FetchProgressProvider>
+      <div className="flex min-h-screen flex-col bg-background md:flex-row">
+        <AdminSidebar logoutSlot={logoutButton} />
+        <main className="min-w-0 flex-1 p-4 md:p-8">{children}</main>
+      </div>
+    </FetchProgressProvider>
   )
 }

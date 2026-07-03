@@ -1,8 +1,8 @@
 "use client"
 
 import { useEffect, useRef, useState, useTransition } from "react"
-import { useRouter } from "next/navigation"
 import { createSource, deleteSource, toggleSourceActive } from "@/app/admin/(panel)/sources/actions"
+import { useFetchProgress } from "@/components/admin/fetch-progress-provider"
 
 type SourceRow = {
   id: number
@@ -13,23 +13,13 @@ type SourceRow = {
   failCount: number | null
 }
 
-type ProgressLine = {
-  key: number
-  text: string
-  tone: "info" | "success" | "warn" | "error"
-}
-
 export function SourcesManager({ rows }: { rows: SourceRow[] }) {
-  const router = useRouter()
   const formRef = useRef<HTMLFormElement>(null)
   const logEndRef = useRef<HTMLDivElement>(null)
   const [isPending, startTransition] = useTransition()
   const [error, setError] = useState<string | null>(null)
   const [confirmId, setConfirmId] = useState<number | null>(null)
-  const [fetchingId, setFetchingId] = useState<number | null>(null)
-  const [progressLines, setProgressLines] = useState<ProgressLine[]>([])
-  const [progressSource, setProgressSource] = useState<string | null>(null)
-  const lineKey = useRef(0)
+  const { fetchingId, progressSource, progressLines, startFetch, clearLog, fetchError } = useFetchProgress()
 
   useEffect(() => {
     logEndRef.current?.scrollIntoView({ behavior: "smooth", block: "nearest" })
@@ -64,84 +54,9 @@ export function SourcesManager({ rows }: { rows: SourceRow[] }) {
     })
   }
 
-  function pushLine(text: string, tone: ProgressLine["tone"]) {
-    lineKey.current += 1
-    setProgressLines((prev) => [...prev.slice(-199), { key: lineKey.current, text, tone }])
-  }
-
-  async function handleFetchNow(id: number, name: string) {
-    if (fetchingId !== null) return
+  function handleFetchNow(id: number, name: string) {
     setError(null)
-    setProgressLines([])
-    setProgressSource(name)
-    setFetchingId(id)
-
-    try {
-      const response = await fetch(`/admin/sources/${id}/fetch`, { method: "POST" })
-      if (!response.ok || !response.body) {
-        const body = await response.json().catch(() => null)
-        setError(body?.error || `Fetch failed (${response.status})`)
-        return
-      }
-
-      const reader = response.body.getReader()
-      const decoder = new TextDecoder()
-      let buffer = ""
-
-      while (true) {
-        const { done, value } = await reader.read()
-        if (done) break
-        buffer += decoder.decode(value, { stream: true })
-
-        const lines = buffer.split("\n")
-        buffer = lines.pop() ?? ""
-
-        for (const line of lines) {
-          if (!line.trim()) continue
-          let event: Record<string, unknown>
-          try {
-            event = JSON.parse(line)
-          } catch {
-            continue
-          }
-
-          if (event.type === "status") {
-            pushLine(String(event.message), "info")
-          } else if (event.type === "feed") {
-            pushLine(`Feed parsed: ${event.total} item${event.total === 1 ? "" : "s"} found.`, "info")
-          } else if (event.type === "item") {
-            const prefix = `[${event.index}/${event.total}]`
-            const title = String(event.title).slice(0, 70)
-            if (event.status === "duplicate") {
-              pushLine(`${prefix} Skipped (already in database): ${title}`, "info")
-            } else if (event.status === "enriching") {
-              pushLine(`${prefix} AI enriching: ${title}`, "info")
-            } else if (event.status === "added") {
-              pushLine(`${prefix} Added (active): ${title}`, "success")
-            } else if (event.status === "flagged") {
-              pushLine(
-                `${prefix} Added but FLAGGED for review: ${title}${event.detail ? ` — ${event.detail}` : ""}`,
-                "warn",
-              )
-            } else if (event.status === "error") {
-              pushLine(`${prefix} Failed: ${title}${event.detail ? ` — ${event.detail}` : ""}`, "error")
-            }
-          } else if (event.type === "done") {
-            pushLine(
-              `Done — ${event.added} added (${event.flagged} flagged), ${event.skipped} duplicates skipped, ${event.errors} error${event.errors === 1 ? "" : "s"}.`,
-              "success",
-            )
-          } else if (event.type === "fatal") {
-            pushLine(`Fetch failed: ${event.message}`, "error")
-          }
-        }
-      }
-      router.refresh()
-    } catch (err) {
-      setError(`Fetch failed: ${String(err)}`.slice(0, 300))
-    } finally {
-      setFetchingId(null)
-    }
+    startFetch(id, name)
   }
 
   return (
@@ -187,9 +102,9 @@ export function SourcesManager({ rows }: { rows: SourceRow[] }) {
         </button>
       </form>
 
-      {error && (
+      {(error || fetchError) && (
         <p role="alert" className="rounded-lg bg-destructive/10 px-4 py-2 text-sm font-medium text-destructive">
-          {error}
+          {error || fetchError}
         </p>
       )}
 
@@ -209,10 +124,7 @@ export function SourcesManager({ rows }: { rows: SourceRow[] }) {
             {fetchingId === null && (
               <button
                 type="button"
-                onClick={() => {
-                  setProgressLines([])
-                  setProgressSource(null)
-                }}
+                onClick={clearLog}
                 className="text-xs font-medium text-muted-foreground transition hover:text-foreground"
               >
                 Dismiss
