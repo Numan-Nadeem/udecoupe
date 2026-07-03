@@ -15,8 +15,24 @@ export type IngestSource = {
 
 export type IngestResult = {
   added: number
+  flagged: number
+  skipped: number
   errors: string[]
 }
+
+export type IngestProgressEvent =
+  | { type: "status"; message: string }
+  | { type: "feed"; total: number }
+  | {
+      type: "item"
+      index: number
+      total: number
+      title: string
+      status: "duplicate" | "enriching" | "added" | "flagged" | "error"
+      detail?: string
+    }
+
+export type IngestProgressCallback = (event: IngestProgressEvent) => void | Promise<void>
 
 const DEFAULT_COUPON_TTL_MS = 3 * 24 * 60 * 60 * 1000 // 3 days
 const MAX_ITEMS_PER_SOURCE = 50
@@ -68,21 +84,39 @@ function extractCouponCode(url: string): string {
  * Throws only if the feed itself cannot be fetched/parsed — individual item
  * failures are collected into `errors` and never abort the run.
  */
-export async function ingestSource(source: IngestSource, affiliateId: string | null): Promise<IngestResult> {
+export async function ingestSource(
+  source: IngestSource,
+  affiliateId: string | null,
+  onProgress?: IngestProgressCallback,
+): Promise<IngestResult> {
   let added = 0
+  let flagged = 0
+  let skipped = 0
   const errors: string[] = []
 
   try {
+    await onProgress?.({ type: "status", message: `Fetching feed "${source.name}"...` })
     const feedData = await fetchRssFeed(source.url)
+    const items = feedData.items.slice(0, MAX_ITEMS_PER_SOURCE)
+    const total = items.length
+    await onProgress?.({ type: "feed", total })
 
-    for (const item of feedData.items.slice(0, MAX_ITEMS_PER_SOURCE)) {
+    for (let i = 0; i < items.length; i++) {
+      const item = items[i]
+      const index = i + 1
       try {
         // Deduplicate by coupon_url
         const existing = await db.query.courses.findFirst({
           where: eq(courses.couponUrl, item.couponUrl),
           columns: { id: true },
         })
-        if (existing) continue
+        if (existing) {
+          skipped++
+          await onProgress?.({ type: "item", index, total, title: item.title, status: "duplicate" })
+          continue
+        }
+
+        await onProgress?.({ type: "item", index, total, title: item.title, status: "enriching" })
 
         // AI enrichment — failure must not block insertion
         let enriched: EnrichedData
@@ -128,8 +162,29 @@ export async function ingestSource(source: IngestSource, affiliateId: string | n
         })
 
         added++
+        if (enriched.isFlagged) {
+          flagged++
+          await onProgress?.({
+            type: "item",
+            index,
+            total,
+            title: item.title,
+            status: "flagged",
+            detail: enriched.flagReason || undefined,
+          })
+        } else {
+          await onProgress?.({ type: "item", index, total, title: item.title, status: "added" })
+        }
       } catch (itemErr) {
         errors.push(`Item "${item.title.slice(0, 60)}": ${String(itemErr)}`.slice(0, 300))
+        await onProgress?.({
+          type: "item",
+          index,
+          total,
+          title: item.title,
+          status: "error",
+          detail: String(itemErr).slice(0, 200),
+        })
       }
     }
 
@@ -139,7 +194,7 @@ export async function ingestSource(source: IngestSource, affiliateId: string | n
       .set({ lastFetchedAt: new Date(), failCount: 0 })
       .where(eq(rssSources.id, source.id))
 
-    return { added, errors }
+    return { added, flagged, skipped, errors }
   } catch (sourceErr) {
     // Source fetch failed: increment fail count, auto-disable at 5
     const failCount = (source.failCount ?? 0) + 1

@@ -47,6 +47,26 @@ function stripHtml(html: string): string {
     .trim()
 }
 
+/**
+ * Clean a feed description into meaningful plain text.
+ * Many coupon feeds ship only an <img> tag or bare URLs as the description —
+ * after stripping HTML and URLs, those become empty strings instead of
+ * garbage like "https://img-c.udemycdn.com/...".
+ */
+function cleanDescription(rawHtml: string): string {
+  return stripHtml(rawHtml)
+    .replace(/https?:\/\/\S+/g, " ")
+    .replace(/\[html\]/gi, " ")
+    .replace(/\s+/g, " ")
+    .trim()
+}
+
+/** Extract the first <img src="..."> URL from raw HTML, if any. */
+function extractImageUrl(rawHtml: string): string {
+  const match = rawHtml.match(/<img[^>]+src=["']([^"']+)["']/i)
+  return match?.[1]?.startsWith("http") ? match[1] : ""
+}
+
 const FETCH_TIMEOUT_MS = 20_000
 const MAX_XML_BYTES = 5 * 1024 * 1024 // 5MB cap
 
@@ -105,11 +125,12 @@ export async function fetchRssFeed(url: string): Promise<{ items: RssItem[] }> {
         links.find((l) => l["@_rel"] === "alternate")?.["@_href"] ||
         links[0]?.["@_href"] ||
         ""
+      const rawSummary = textOf(entry.summary) || textOf(entry.content)
       items.push({
         title: stripHtml(textOf(entry.title)),
-        description: stripHtml(textOf(entry.summary) || textOf(entry.content)),
+        description: cleanDescription(rawSummary),
         couponUrl: typeof href === "string" ? href.trim() : "",
-        thumbnail: entry["media:thumbnail"]?.["@_url"] || "",
+        thumbnail: entry["media:thumbnail"]?.["@_url"] || extractImageUrl(rawSummary) || "",
         instructor: textOf(entry.author?.name) || "",
         category: asArray<Record<string, any>>(entry.category)[0]?.["@_term"] || "",
       })
@@ -117,14 +138,16 @@ export async function fetchRssFeed(url: string): Promise<{ items: RssItem[] }> {
   } else if (parsed.rss?.channel?.item) {
     // RSS 2.0 format
     for (const item of asArray<Record<string, any>>(parsed.rss.channel.item)) {
+      const rawDescription = textOf(item.description)
       items.push({
         title: stripHtml(textOf(item.title)),
-        description: stripHtml(textOf(item.description)),
+        description: cleanDescription(rawDescription),
         couponUrl: textOf(item.link).trim(),
         thumbnail:
           item["media:content"]?.["@_url"] ||
           item["media:thumbnail"]?.["@_url"] ||
           textOf(item.image?.url) ||
+          extractImageUrl(rawDescription) ||
           "",
         instructor: stripHtml(textOf(item["dc:creator"]) || textOf(item.author)),
         category: stripHtml(textOf(asArray(item.category)[0])),

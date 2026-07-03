@@ -17,8 +17,9 @@ const enrichmentResponseSchema = z.object({
 })
 
 const ENRICH_TIMEOUT_MS = 45_000
+const ENRICH_MAX_ATTEMPTS = 2
 
-export async function enrichCourse(input: {
+async function callEnrichment(input: {
   title: string
   description: string
   instructor?: string
@@ -35,27 +36,26 @@ export async function enrichCourse(input: {
   const description = input.description.slice(0, 2000)
   const instructor = (input.instructor || "Unknown").slice(0, 150)
 
-  const prompt = `You are a course metadata enrichment agent. Given raw course data from an RSS feed, return ONLY a valid JSON object with no preamble or markdown.
+  const prompt = `You are a course metadata enrichment agent for a Udemy coupon aggregator. Given raw course data from an RSS feed, return ONLY a valid JSON object with no preamble or markdown.
 
 Input:
 Title: ${title}
-Description: ${description}
+Description: ${description || "(not provided by feed)"}
 Instructor: ${instructor}
 
 Return ONLY this JSON structure, nothing else:
 {
   "category": "string (e.g., Web Development, Data Science, Business)",
   "difficulty": "Beginner | Intermediate | Advanced | Unknown",
-  "description_enriched": "string (80-120 words, rewritten for SEO)",
+  "description_enriched": "string (80-120 words, SEO-friendly course description written from the title and any available context)",
   "is_flagged": boolean,
   "flag_reason": "string or null"
 }
 
-Flag as true if any of:
-- Title is generic, vague, or spammy
-- Description is under 50 words or empty
-- No instructor name or "Unknown"
-- Content appears low quality or off-topic`
+IMPORTANT flagging rules:
+- Coupon RSS feeds routinely omit descriptions and instructor names. That is NORMAL — do NOT flag for a missing/short description or unknown instructor.
+- Set is_flagged=true ONLY if the title itself is spammy, misleading, adult/NSFW, off-topic for online courses, or clearly clickbait garbage.
+- When in doubt, do not flag.`
 
   const controller = new AbortController()
   const timer = setTimeout(() => controller.abort(), ENRICH_TIMEOUT_MS)
@@ -74,8 +74,10 @@ Flag as true if any of:
       body: JSON.stringify({
         model,
         messages: [{ role: "user", content: prompt }],
-        max_tokens: 700,
+        max_tokens: 1000,
         temperature: 0.4,
+        // Force valid JSON output — prevents markdown wrapping and truncated objects
+        response_format: { type: "json_object" },
       }),
     })
   } finally {
@@ -120,4 +122,28 @@ Flag as true if any of:
     isFlagged: validated.data.is_flagged,
     flagReason: validated.data.flag_reason,
   }
+}
+
+/**
+ * Enrich a course with AI metadata. Retries once on transient failures
+ * (malformed JSON, timeouts, API hiccups) before giving up.
+ */
+export async function enrichCourse(input: {
+  title: string
+  description: string
+  instructor?: string
+}): Promise<EnrichedData> {
+  let lastError: unknown
+  for (let attempt = 1; attempt <= ENRICH_MAX_ATTEMPTS; attempt++) {
+    try {
+      return await callEnrichment(input)
+    } catch (err) {
+      lastError = err
+      if (attempt < ENRICH_MAX_ATTEMPTS) {
+        // Brief backoff before retrying
+        await new Promise((resolve) => setTimeout(resolve, 1500))
+      }
+    }
+  }
+  throw lastError
 }
