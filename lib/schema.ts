@@ -6,6 +6,7 @@ import {
   boolean,
   numeric,
   timestamp,
+  jsonb,
 } from "drizzle-orm/pg-core"
 import { relations } from "drizzle-orm"
 
@@ -56,6 +57,35 @@ export const couponClicks = pgTable("coupon_clicks", {
 export const settings = pgTable("settings", {
   key: text("key").primaryKey(),
   value: text("value"),
+})
+
+export const adminAuditLogs = pgTable("admin_audit_logs", {
+  id: serial("id").primaryKey(),
+  action: text("action"),
+  entity: text("entity"),
+  entityId: integer("entity_id"),
+  changedFields: jsonb("changed_fields"),
+  performedAt: timestamp("performed_at", { withTimezone: true }).defaultNow(),
+  ipHash: text("ip_hash"),
+})
+
+export const rssSources = pgTable("rss_sources", {
+  id: serial("id").primaryKey(),
+  name: text("name").notNull().unique(),
+  url: text("url").notNull().unique(),
+  isActive: boolean("is_active").default(true),
+  lastFetchedAt: timestamp("last_fetched_at", { withTimezone: true }),
+  failCount: integer("fail_count").default(0),
+})
+
+export const cronLogs = pgTable("cron_logs", {
+  id: serial("id").primaryKey(),
+  runAt: timestamp("run_at", { withTimezone: true }),
+  sourceName: text("source_name"),
+  coursesAdded: integer("courses_added"),
+  coursesExpired: integer("courses_expired"),
+  errorMessage: text("error_message"),
+  status: text("status"),
 })
 
 export const coursesRelations = relations(courses, ({ many }) => ({
