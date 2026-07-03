@@ -28,6 +28,7 @@ export const courses = pgTable("courses", {
   expiresAt: timestamp("expires_at", { withTimezone: true }),
   isActive: boolean("is_active").default(true),
   isFlagged: boolean("is_flagged").default(false),
+  flagReason: text("flag_reason"),
   expiredReports: integer("expired_reports").default(0),
   source: text("source"),
   rssSourceName: text("rss_source_name"),
