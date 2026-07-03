@@ -4,9 +4,11 @@ import { z } from "zod"
 import { eq } from "drizzle-orm"
 import { revalidatePath } from "next/cache"
 import { db } from "@/lib/db"
-import { rssSources } from "@/lib/schema"
+import { rssSources, cronLogs } from "@/lib/schema"
 import { requireAdmin } from "@/lib/session"
 import { logAuditEvent } from "@/lib/audit"
+import { ingestSource } from "@/lib/ingest"
+import { getAffiliateId } from "@/lib/affiliate"
 
 const sourceSchema = z.object({
   name: z.string().trim().min(1, "Name is required").max(100),
@@ -79,6 +81,68 @@ export async function toggleSourceActive(id: number): Promise<{ error: string | 
   })
   revalidatePath("/admin/sources")
   return { error: null }
+}
+
+export async function fetchSourceNow(
+  id: number,
+): Promise<{ error: string | null; added?: number; itemErrors?: number }> {
+  try {
+    await requireAdmin()
+  } catch {
+    return { error: "Unauthorized" }
+  }
+  if (!Number.isInteger(id) || id <= 0) return { error: "Invalid source id" }
+
+  const source = await db.query.rssSources.findFirst({
+    where: eq(rssSources.id, id),
+  })
+  if (!source) return { error: "Source not found" }
+
+  const runStartTime = new Date()
+
+  try {
+    const affiliateId = await getAffiliateId()
+    const result = await ingestSource(source, affiliateId)
+
+    await db.insert(cronLogs).values({
+      runAt: runStartTime,
+      sourceName: source.name,
+      coursesAdded: result.added,
+      coursesExpired: 0,
+      errorMessage: result.errors.length > 0 ? result.errors.join("; ").slice(0, 4000) : null,
+      status: result.errors.length > 0 && result.added === 0 ? "partial" : "success",
+    })
+
+    await logAuditEvent("update", "rss_sources", id, {
+      manualFetch: true,
+      name: source.name,
+      coursesAdded: result.added,
+      itemErrors: result.errors.length,
+    })
+
+    revalidatePath("/admin/sources")
+    revalidatePath("/admin/courses")
+    revalidatePath("/admin/logs")
+    revalidatePath("/")
+    return { error: null, added: result.added, itemErrors: result.errors.length }
+  } catch (err) {
+    try {
+      await db.insert(cronLogs).values({
+        runAt: runStartTime,
+        sourceName: source.name,
+        coursesAdded: 0,
+        coursesExpired: 0,
+        errorMessage: String(err).slice(0, 4000),
+        status: "fail",
+      })
+    } catch (logErr) {
+      console.error("[admin] Failed to write cron log for manual fetch:", logErr)
+    }
+
+    revalidatePath("/admin/sources")
+    revalidatePath("/admin/logs")
+    return { error: `Fetch failed: ${String(err)}`.slice(0, 300) }
+  }
 }
 
 export async function deleteSource(id: number): Promise<{ error: string | null }> {

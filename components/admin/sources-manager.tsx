@@ -1,7 +1,7 @@
 "use client"
 
 import { useRef, useState, useTransition } from "react"
-import { createSource, deleteSource, toggleSourceActive } from "@/app/admin/(panel)/sources/actions"
+import { createSource, deleteSource, fetchSourceNow, toggleSourceActive } from "@/app/admin/(panel)/sources/actions"
 
 type SourceRow = {
   id: number
@@ -17,6 +17,8 @@ export function SourcesManager({ rows }: { rows: SourceRow[] }) {
   const [isPending, startTransition] = useTransition()
   const [error, setError] = useState<string | null>(null)
   const [confirmId, setConfirmId] = useState<number | null>(null)
+  const [fetchingId, setFetchingId] = useState<number | null>(null)
+  const [fetchResult, setFetchResult] = useState<string | null>(null)
 
   function handleCreate(formData: FormData) {
     setError(null)
@@ -44,6 +46,25 @@ export function SourcesManager({ rows }: { rows: SourceRow[] }) {
       const res = await deleteSource(id)
       if (res.error) setError(res.error)
       setConfirmId(null)
+    })
+  }
+
+  function handleFetchNow(id: number, name: string) {
+    setError(null)
+    setFetchResult(null)
+    setFetchingId(id)
+    startTransition(async () => {
+      const res = await fetchSourceNow(id)
+      if (res.error) {
+        setError(res.error)
+      } else {
+        const added = res.added ?? 0
+        const failed = res.itemErrors ?? 0
+        setFetchResult(
+          `"${name}" fetched: ${added} course${added === 1 ? "" : "s"} added${failed > 0 ? `, ${failed} item error${failed === 1 ? "" : "s"}` : ""}.`,
+        )
+      }
+      setFetchingId(null)
     })
   }
 
@@ -96,6 +117,12 @@ export function SourcesManager({ rows }: { rows: SourceRow[] }) {
         </p>
       )}
 
+      {fetchResult && (
+        <p role="status" className="rounded-lg bg-primary/10 px-4 py-2 text-sm font-medium text-primary">
+          {fetchResult}
+        </p>
+      )}
+
       {rows.length === 0 ? (
         <div className="rounded-xl border border-border bg-card p-10 text-center text-sm text-muted-foreground">
           No RSS sources yet. Add one above to start ingesting coupons.
@@ -145,6 +172,14 @@ export function SourcesManager({ rows }: { rows: SourceRow[] }) {
                   </td>
                   <td className="px-4 py-3 text-right">
                     <span className="inline-flex items-center gap-2">
+                      <button
+                        type="button"
+                        onClick={() => handleFetchNow(s.id, s.name)}
+                        disabled={isPending}
+                        className="rounded-lg bg-primary/10 px-3 py-1.5 text-xs font-semibold text-primary transition hover:bg-primary/20 disabled:opacity-50"
+                      >
+                        {fetchingId === s.id ? "Fetching..." : "Fetch now"}
+                      </button>
                       <button
                         type="button"
                         onClick={() => handleToggle(s.id)}
