@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0">
+  <channel>
+    <title>Test Coupon Feed</title>
+    <link>http://localhost:3000</link>
+    <description>Test feed for manual fetch</description>
+    <item>
+      <title>Navigation Persistence Test Course One</title>
+      <link>https://www.udemy.com/course/nav-persist-test-one/?couponCode=NAVTEST1&amp;utm_source=feed</link>
+      <description><![CDATA[<img src="https://img-c.udemycdn.com/course/240x135/nav1.jpg" /> Learn testing fundamentals with hands-on projects covering unit tests, integration tests and end-to-end automation.]]></description>
+    </item>
+    <item>
+      <title>Navigation Persistence Test Course Two</title>
+      <link>https://www.udemy.com/course/nav-persist-test-two/?couponCode=NAVTEST2</link>
+      <description><![CDATA[Master advanced patterns for building scalable web applications from scratch.]]></description>
+    </item>
+  </channel>
+</rss>

@@ -24,6 +24,8 @@ export const courses = pgTable("courses", {
   totalStudents: integer("total_students"),
   couponCode: text("coupon_code"),
   couponUrl: text("coupon_url").notNull().unique(),
+  /** Original RSS item link (may be a third-party page) — used for dedupe across runs */
+  feedItemUrl: text("feed_item_url"),
   affiliateUrl: text("affiliate_url"),
   expiresAt: timestamp("expires_at", { withTimezone: true }),
   isActive: boolean("is_active").default(true),

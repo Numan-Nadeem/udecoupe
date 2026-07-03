@@ -1,9 +1,11 @@
 import { db } from "./db"
 import { courses, rssSources } from "./schema"
 import { eq } from "drizzle-orm"
+import { or } from "drizzle-orm"
 import { fetchRssFeed } from "./rss-parser"
 import { enrichCourse, type EnrichedData } from "./enrichment"
 import { buildAffiliateUrl } from "./affiliate"
+import { resolveCouponLink } from "./coupon-resolver"
 
 export type IngestSource = {
   id: number
@@ -28,7 +30,7 @@ export type IngestProgressEvent =
       index: number
       total: number
       title: string
-      status: "duplicate" | "enriching" | "added" | "flagged" | "error"
+      status: "duplicate" | "resolving" | "enriching" | "added" | "flagged" | "error"
       detail?: string
     }
 
@@ -67,15 +69,6 @@ async function generateUniqueSlug(title: string): Promise<string> {
   }
 }
 
-function extractCouponCode(url: string): string {
-  try {
-    const u = new URL(url)
-    return u.searchParams.get("couponCode") || u.searchParams.get("couponcode") || "UNKNOWN"
-  } catch {
-    return "UNKNOWN"
-  }
-}
-
 /**
  * Fetches one RSS source, enriches and inserts new courses, and updates the
  * source's fetch metadata (last_fetched_at / fail_count, auto-disable at 5
@@ -105,12 +98,42 @@ export async function ingestSource(
       const item = items[i]
       const index = i + 1
       try {
-        // Deduplicate by coupon_url
+        // Cheap dedupe first: match on the original feed link or stored coupon URL
         const existing = await db.query.courses.findFirst({
-          where: eq(courses.couponUrl, item.couponUrl),
+          where: or(eq(courses.feedItemUrl, item.couponUrl), eq(courses.couponUrl, item.couponUrl)),
           columns: { id: true },
         })
         if (existing) {
+          skipped++
+          await onProgress?.({ type: "item", index, total, title: item.title, status: "duplicate" })
+          continue
+        }
+
+        // Resolve the RSS link to the real Udemy URL + coupon code.
+        // Third-party pages (coursevania, freebiesglobal, ...) are fetched and
+        // scanned for udemy.com/course links carrying a couponCode.
+        await onProgress?.({ type: "item", index, total, title: item.title, status: "resolving" })
+        const resolved = await resolveCouponLink(item.couponUrl)
+
+        if (!resolved) {
+          errors.push(`Item "${item.title.slice(0, 60)}": no Udemy link found on ${item.couponUrl}`.slice(0, 300))
+          await onProgress?.({
+            type: "item",
+            index,
+            total,
+            title: item.title,
+            status: "error",
+            detail: "No Udemy course link found on the linked page — skipped",
+          })
+          continue
+        }
+
+        // Dedupe again on the resolved Udemy URL (same course posted by many aggregators)
+        const existingResolved = await db.query.courses.findFirst({
+          where: eq(courses.couponUrl, resolved.udemyUrl),
+          columns: { id: true },
+        })
+        if (existingResolved) {
           skipped++
           await onProgress?.({ type: "item", index, total, title: item.title, status: "duplicate" })
           continue
@@ -137,7 +160,7 @@ export async function ingestSource(
         }
 
         const slug = await generateUniqueSlug(item.title)
-        const affiliateUrl = buildAffiliateUrl(item.couponUrl, affiliateId)
+        const affiliateUrl = buildAffiliateUrl(resolved.udemyUrl, affiliateId)
 
         await db.insert(courses).values({
           title: item.title.slice(0, 500),
@@ -150,8 +173,9 @@ export async function ingestSource(
           thumbnailUrl: item.thumbnail?.startsWith("http") ? item.thumbnail.slice(0, 1000) : null,
           rating: null,
           totalStudents: null,
-          couponCode: extractCouponCode(item.couponUrl).slice(0, 100),
-          couponUrl: item.couponUrl,
+          couponCode: (resolved.couponCode || "UNKNOWN").slice(0, 100),
+          couponUrl: resolved.udemyUrl,
+          feedItemUrl: item.couponUrl.slice(0, 2000),
           affiliateUrl,
           expiresAt: new Date(Date.now() + DEFAULT_COUPON_TTL_MS),
           isActive: !enriched.isFlagged, // Flagged courses start inactive
