@@ -4,8 +4,15 @@ import { db } from "./db"
 import { adminAuditLogs } from "./schema"
 import { getClientIp } from "./ip"
 
-export type AuditAction = "create" | "update" | "delete"
-export type AuditEntity = "courses" | "subscribers" | "settings" | "sources"
+export type AuditAction =
+  | "create"
+  | "update"
+  | "delete"
+  | "activate"
+  | "deactivate"
+  | "login"
+  | "bulk_update"
+export type AuditEntity = "courses" | "subscribers" | "settings" | "rss_sources" | "auth"
 
 /**
  * Audit IP hashing uses a stable (non-rotating) salt so admin actions can be
@@ -23,7 +30,7 @@ function hashAuditIp(ip: string): string {
 export async function logAuditEvent(
   action: AuditAction,
   entity: AuditEntity,
-  entityId: number,
+  entityId: number | null,
   changedFields: Record<string, unknown>,
 ): Promise<void> {
   try {
