@@ -27,6 +27,27 @@ function baseUrl(): string {
   return process.env.NEXT_PUBLIC_BASE_URL?.replace(/\/$/, "") || "http://localhost:3000"
 }
 
+/**
+ * Send a generic email via Resend. Logs and silently fails if Resend is not configured.
+ */
+export async function sendEmail(options: { to: string; subject: string; html: string }): Promise<void> {
+  const client = getResend()
+  if (!client) {
+    console.log(`[email] (disabled) Would send to ${options.to}: ${options.subject}`)
+    return
+  }
+  try {
+    await client.emails.send({
+      from: fromEmail,
+      to: options.to,
+      subject: options.subject,
+      html: options.html,
+    })
+  } catch (err) {
+    console.error(`[email] Send failed to ${options.to}:`, err)
+  }
+}
+
 export async function sendVerificationEmail(email: string, token: string): Promise<void> {
   const client = getResend()
   const verifyUrl = `${baseUrl()}/verify?token=${token}`
