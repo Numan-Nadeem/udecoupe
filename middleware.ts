@@ -11,14 +11,18 @@ export async function middleware(request: NextRequest) {
   const session = await getIronSession<SessionData>(request, response, sessionOptions)
 
   const isLoginPage = pathname === "/admin/login"
+  const isPublicAdminPage =
+    isLoginPage ||
+    pathname === "/admin/forgot-password" ||
+    pathname === "/admin/reset-password"
 
   if (!session.isLoggedIn || session.userId !== "admin") {
-    if (isLoginPage) return response
+    if (isPublicAdminPage) return response
     const loginUrl = new URL("/admin/login", request.url)
     return NextResponse.redirect(loginUrl)
   }
 
-  // Already authenticated: keep them out of the login page.
+  // Already authenticated: keep them out of the login/reset pages.
   if (isLoginPage) {
     return NextResponse.redirect(new URL("/admin/dashboard", request.url))
   }
