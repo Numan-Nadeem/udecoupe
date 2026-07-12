@@ -41,7 +41,7 @@ export function ForgotPasswordForm() {
           required
           autoComplete="email"
           className="rounded-lg border border-input bg-background px-3 py-2 text-sm text-foreground outline-none ring-ring focus:ring-2"
-          placeholder="Enter your email..."
+          placeholder="admin@example.com"
         />
       </div>
 
