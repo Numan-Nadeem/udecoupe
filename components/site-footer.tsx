@@ -45,20 +45,6 @@ export function SiteFooter() {
       </div>
       <div className="border-t border-border bg-secondary/30">
         <div className="mx-auto max-w-6xl px-4 py-6 sm:px-6">
-          <div className="mb-3 rounded-lg bg-amber-50 p-3 dark:bg-amber-950/30">
-            <p className="text-xs text-amber-900 dark:text-amber-100">
-              <strong>💼 Affiliate Disclosure:</strong> Udecoupe uses affiliate links to Udemy. We earn commissions on
-              course enrollments at no extra cost to you. See our{" "}
-              <Link href="/privacy" className="underline hover:text-amber-950 dark:hover:text-amber-50">
-                Privacy Policy
-              </Link>
-              {" and "}
-              <Link href="/terms" className="underline hover:text-amber-950 dark:hover:text-amber-50">
-                Terms of Service
-              </Link>
-              {" for details."}
-            </p>
-          </div>
           <p className="text-xs text-muted-foreground">
             © {new Date().getFullYear()} Udecoupe. Coupon availability and pricing are set by Udemy and may change at
             any time.
