@@ -233,6 +233,7 @@ export default async function CoursePage({
 
               <a
                 href={`/go/${course.slug}`}
+                target="_blank"
                 rel="nofollow sponsored noopener"
                 className="mt-4 flex w-full items-center justify-center gap-2 rounded-lg bg-accent px-5 py-3.5 text-base font-bold text-accent-foreground shadow-sm transition hover:brightness-95"
               >
