@@ -91,6 +91,18 @@ export const cronLogs = pgTable("cron_logs", {
   status: text("status"),
 })
 
+/**
+ * Single-use tokens for admin password reset.
+ * Only ever issued to the hardcoded owner email — expires in 15 minutes.
+ */
+export const adminPasswordResets = pgTable("admin_password_resets", {
+  id: serial("id").primaryKey(),
+  tokenHash: text("token_hash").notNull().unique(),
+  createdAt: timestamp("created_at", { withTimezone: true }).defaultNow(),
+  expiresAt: timestamp("expires_at", { withTimezone: true }).notNull(),
+  usedAt: timestamp("used_at", { withTimezone: true }),
+})
+
 export const coursesRelations = relations(courses, ({ many }) => ({
   clicks: many(couponClicks),
 }))
