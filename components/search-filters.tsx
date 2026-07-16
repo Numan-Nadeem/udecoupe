@@ -48,7 +48,7 @@ export function SearchFilters({
   }, [search])
 
   const selectClass =
-    "rounded-full border border-border bg-card px-4 py-2.5 text-sm text-card-foreground shadow-sm outline-none transition-all duration-300 ease-[cubic-bezier(0.32,0.72,0,1)] focus:border-ring focus:ring-2 focus:ring-ring/30"
+    "rounded-full border border-border bg-card px-4 py-2.5 pr-10 text-sm text-card-foreground shadow-sm outline-none transition-all duration-300 ease-[cubic-bezier(0.32,0.72,0,1)] focus:border-primary/40 focus:ring-2 focus:ring-primary/20 cursor-pointer hover:border-primary/25 appearance-none bg-no-repeat bg-right"
 
   return (
     <div className="flex flex-col gap-3 lg:flex-row lg:items-center">
