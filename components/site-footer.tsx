@@ -3,51 +3,74 @@ import { Logo } from "@/components/logo"
 
 export function SiteFooter() {
   return (
-    <footer className="mt-auto border-t border-border bg-card">
-      <div className="mx-auto flex max-w-6xl flex-col gap-6 px-4 py-10 sm:px-6 md:flex-row md:items-center md:justify-between">
-        <div className="max-w-sm">
-          <Logo className="h-10 w-auto" />
-          <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
-            Hand-picked free Udemy courses with active coupons, verified and refreshed daily.
-            We are not affiliated with Udemy.
-          </p>
+    <footer className="mt-auto border-t border-border">
+      <div className="mx-auto max-w-6xl px-4 py-12 sm:px-6 sm:py-16">
+        <div className="grid gap-12 md:gap-16 grid-cols-1 md:grid-cols-4">
+          <div className="md:col-span-1">
+            <Logo className="h-8 w-auto" />
+            <p className="mt-3 text-xs leading-relaxed text-muted-foreground">
+              Hand-picked free Udemy courses with active coupons, verified and refreshed daily.
+            </p>
+          </div>
+          <div>
+            <p className="text-xs font-bold uppercase tracking-[0.2em] text-muted-foreground">Explore</p>
+            <div className="mt-4 space-y-3">
+              <Link href="/" className="block text-sm font-medium text-foreground transition-colors duration-300 ease-[cubic-bezier(0.32,0.72,0,1)] hover:text-primary">
+                All courses
+              </Link>
+              <Link href="/?sort=expiring" className="block text-sm font-medium text-foreground transition-colors duration-300 ease-[cubic-bezier(0.32,0.72,0,1)] hover:text-primary">
+                Expiring soon
+              </Link>
+              <Link href="/?sort=rating" className="block text-sm font-medium text-foreground transition-colors duration-300 ease-[cubic-bezier(0.32,0.72,0,1)] hover:text-primary">
+                Top rated
+              </Link>
+              <Link href="/#subscribe" className="block text-sm font-medium text-foreground transition-colors duration-300 ease-[cubic-bezier(0.32,0.72,0,1)] hover:text-primary">
+                Email alerts
+              </Link>
+            </div>
+          </div>
+          <div>
+            <p className="text-xs font-bold uppercase tracking-[0.2em] text-muted-foreground">Company</p>
+            <div className="mt-4 space-y-3">
+              <Link href="/about" className="block text-sm font-medium text-foreground transition-colors duration-300 ease-[cubic-bezier(0.32,0.72,0,1)] hover:text-primary">
+                About
+              </Link>
+              <Link href="/contact" className="block text-sm font-medium text-foreground transition-colors duration-300 ease-[cubic-bezier(0.32,0.72,0,1)] hover:text-primary">
+                Contact
+              </Link>
+            </div>
+          </div>
+          <div>
+            <p className="text-xs font-bold uppercase tracking-[0.2em] text-muted-foreground">Legal</p>
+            <div className="mt-4 space-y-3">
+              <Link href="/privacy" className="block text-sm font-medium text-foreground transition-colors duration-300 ease-[cubic-bezier(0.32,0.72,0,1)] hover:text-primary">
+                Privacy
+              </Link>
+              <Link href="/terms" className="block text-sm font-medium text-foreground transition-colors duration-300 ease-[cubic-bezier(0.32,0.72,0,1)] hover:text-primary">
+                Terms
+              </Link>
+            </div>
+          </div>
         </div>
-        <nav className="flex flex-col gap-4 text-sm sm:flex-row sm:gap-8">
-          <div className="flex flex-wrap gap-x-6 gap-y-2">
-            <Link href="/" className="text-muted-foreground transition hover:text-foreground">
-              All courses
-            </Link>
-            <Link href="/?sort=expiring" className="text-muted-foreground transition hover:text-foreground">
-              Expiring soon
-            </Link>
-            <Link href="/?sort=rating" className="text-muted-foreground transition hover:text-foreground">
-              Top rated
-            </Link>
-            <Link href="/#subscribe" className="text-muted-foreground transition hover:text-foreground">
-              Email alerts
-            </Link>
-          </div>
-          <div className="flex flex-wrap gap-x-6 gap-y-2 border-t border-border pt-4 sm:border-0 sm:pt-0">
-            <Link href="/about" className="text-muted-foreground transition hover:text-foreground">
-              About
-            </Link>
-            <Link href="/contact" className="text-muted-foreground transition hover:text-foreground">
-              Contact
-            </Link>
-            <Link href="/privacy" className="text-muted-foreground transition hover:text-foreground">
-              Privacy
-            </Link>
-            <Link href="/terms" className="text-muted-foreground transition hover:text-foreground">
-              Terms
-            </Link>
-          </div>
-        </nav>
       </div>
-      <div className="border-t border-border bg-secondary/30">
-        <div className="mx-auto max-w-6xl px-4 py-6 sm:px-6">
-          <p className="text-xs text-muted-foreground">
-            © {new Date().getFullYear()} Udecoupe. Coupon availability and pricing are set by Udemy and may change at
-            any time.
+
+      <div className="border-t border-border bg-secondary/30 py-8 sm:py-10">
+        <div className="mx-auto max-w-6xl px-4 sm:px-6">
+          <div className="mb-4 rounded-2xl border border-primary/25 bg-primary/8 px-4 py-3.5">
+            <p className="text-xs leading-relaxed text-muted-foreground">
+              <span className="font-semibold text-primary">Affiliate Disclosure:</span> Udecoupe uses affiliate links to Udemy. We earn commissions on course enrollments at no extra cost to you. See our{" "}
+              <Link href="/privacy" className="font-medium text-primary underline underline-offset-2 transition-colors duration-300 hover:text-primary/80">
+                Privacy Policy
+              </Link>
+              {" and "}
+              <Link href="/terms" className="font-medium text-primary underline underline-offset-2 transition-colors duration-300 hover:text-primary/80">
+                Terms of Service
+              </Link>
+              {" for details."}
+            </p>
+          </div>
+          <p className="text-[11px] font-medium uppercase tracking-[0.15em] text-muted-foreground">
+            © {new Date().getFullYear()} Udecoupe. Coupon availability and pricing are set by Udemy and may change at any time.
           </p>
         </div>
       </div>

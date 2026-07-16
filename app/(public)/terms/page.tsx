@@ -7,22 +7,37 @@ export const metadata: Metadata = {
 
 export default function TermsPage() {
   return (
-    <main className="min-h-screen bg-gradient-to-b from-background to-secondary/10">
-      <div className="mx-auto max-w-3xl px-4 py-12 sm:px-6 lg:px-8">
-        <div className="space-y-8">
+    <main className="relative min-h-screen overflow-hidden">
+      {/* Background texture and glow */}
+      <div className="bg-grid mask-fade-edges pointer-events-none fixed inset-0" aria-hidden="true" />
+      <div
+        className="pointer-events-none fixed -left-32 -bottom-32 h-[480px] w-[480px] rounded-full opacity-20 blur-3xl"
+        style={{ background: "radial-gradient(circle, var(--primary) 0%, transparent 70%)" }}
+        aria-hidden="true"
+      />
+
+      <div className="relative mx-auto max-w-4xl px-4 py-16 sm:px-6 sm:py-24">
+        <div className="space-y-12">
           {/* Header */}
           <div className="space-y-4">
-            <h1 className="text-4xl font-bold tracking-tight text-foreground">Terms of Service</h1>
-            <p className="text-lg text-muted-foreground">Last updated: July 2026</p>
+            <span className="inline-flex rounded-full border border-border bg-card px-3 py-1 text-[10px] font-medium uppercase tracking-[0.2em] text-muted-foreground">
+              Legal
+            </span>
+            <h1 className="text-4xl font-extrabold leading-[1.05] tracking-[-0.03em] text-foreground sm:text-5xl">
+              Terms of Service
+            </h1>
+            <p className="text-sm font-medium uppercase tracking-[0.15em] text-muted-foreground">
+              Last updated: July 2026
+            </p>
           </div>
 
           {/* Affiliate Notice - Prominent */}
-          <div className="rounded-lg border-2 border-blue-500 bg-blue-50 p-6 dark:bg-blue-950/30">
-            <div className="flex items-start gap-3">
-              <div className="text-2xl">💼</div>
+          <div className="rounded-2xl border border-primary/25 bg-primary/8 p-6">
+            <div className="flex items-start gap-4">
+              <div className="text-2xl flex-shrink-0">💼</div>
               <div>
-                <h3 className="font-semibold text-blue-900 dark:text-blue-100">Affiliate Relationship</h3>
-                <p className="mt-2 text-sm text-blue-800 dark:text-blue-200">
+                <h3 className="font-semibold text-foreground">Affiliate Relationship</h3>
+                <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
                   Udecoupe is an independent affiliate of Udemy. We earn commissions on course referrals. Udemy does
                   not endorse or control Udecoupe. All course links redirect to Udemy.com with our affiliate code
                   attached.

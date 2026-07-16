@@ -7,75 +7,93 @@ export const metadata: Metadata = {
 
 export default function AboutPage() {
   return (
-    <main className="min-h-screen bg-gradient-to-b from-background to-secondary/10">
-      <div className="mx-auto max-w-3xl px-4 py-12 sm:px-6 lg:px-8">
-        <div className="space-y-12">
+    <main className="relative min-h-screen overflow-hidden">
+      {/* Background texture and glow */}
+      <div className="bg-grid mask-fade-edges pointer-events-none fixed inset-0" aria-hidden="true" />
+      <div
+        className="pointer-events-none fixed -left-40 -top-40 h-[480px] w-[480px] rounded-full opacity-20 blur-3xl"
+        style={{ background: "radial-gradient(circle, var(--primary) 0%, transparent 70%)" }}
+        aria-hidden="true"
+      />
+
+      <div className="relative mx-auto max-w-4xl px-4 py-16 sm:px-6 sm:py-24">
+        <div className="space-y-16">
           {/* Header */}
-          <div className="space-y-4 text-center">
-            <h1 className="text-4xl font-bold tracking-tight text-foreground">About Udecoupe</h1>
-            <p className="text-xl text-muted-foreground">Finding free Udemy courses made simple</p>
+          <div className="space-y-4">
+            <span className="inline-flex rounded-full border border-border bg-card px-3 py-1 text-[10px] font-medium uppercase tracking-[0.2em] text-muted-foreground">
+              About Us
+            </span>
+            <h1 className="text-4xl font-extrabold leading-[1.05] tracking-[-0.03em] text-foreground sm:text-5xl">
+              Finding free Udemy courses made simple
+            </h1>
+            <p className="text-lg leading-relaxed text-muted-foreground">
+              Udecoupe aggregates free Udemy course coupons in one place, saving you time and helping you learn without breaking the bank.
+            </p>
           </div>
 
           {/* Mission */}
-          <section className="space-y-6 rounded-lg border border-border bg-card p-8">
-            <div>
-              <h2 className="mb-3 text-2xl font-semibold text-foreground">Our Mission</h2>
-              <p className="text-lg text-muted-foreground">
-                Udecoupe makes it easy to discover free Udemy courses with active coupon codes. We believe quality
-                education should be accessible to everyone, regardless of budget. By aggregating free courses in one
-                place, we save you time and help you learn new skills without breaking the bank.
+          <section className="space-y-6 rounded-[2rem] border border-border bg-secondary/50 p-1.5">
+            <div className="rounded-[calc(2rem-0.375rem)] bg-card p-8 shadow-[inset_0_1px_1px_rgba(255,255,255,0.06)]">
+              <h2 className="mb-3 text-2xl font-extrabold tracking-[-0.02em] text-foreground">Our Mission</h2>
+              <p className="text-base leading-relaxed text-muted-foreground">
+                We believe quality education should be accessible to everyone, regardless of budget. By aggregating free courses in one place, we save you time and help you learn new skills without breaking the bank.
               </p>
             </div>
           </section>
 
           {/* How It Works */}
           <section className="space-y-6">
-            <h2 className="text-2xl font-semibold text-foreground">How Udecoupe Works</h2>
+            <div>
+              <span className="inline-flex rounded-full border border-border bg-card px-3 py-1 text-[10px] font-medium uppercase tracking-[0.2em] text-muted-foreground">
+                Process
+              </span>
+              <h2 className="mt-4 text-2xl font-extrabold tracking-[-0.02em] text-foreground">How Udecoupe Works</h2>
+            </div>
             <div className="space-y-4">
-              <div className="flex gap-4 rounded-lg border border-border p-4">
-                <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-primary/10">
-                  <span className="font-semibold text-primary">1</span>
+              <div className="flex gap-5 rounded-2xl border border-border bg-card p-5 transition-all duration-300 ease-[cubic-bezier(0.32,0.72,0,1)] hover:border-primary/25 hover:shadow-[0_8px_24px_-12px_color-mix(in_oklch,var(--primary)_25%,transparent)]">
+                <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-primary/15 font-bold text-primary">
+                  1
                 </div>
                 <div>
                   <h3 className="font-semibold text-foreground">We Hunt for Deals</h3>
-                  <p className="text-sm text-muted-foreground">
-                    Our system continuously scans RSS feeds from coupon aggregators to find free Udemy courses.
+                  <p className="text-sm leading-relaxed text-muted-foreground">
+                    Our system continuously scans coupon aggregators to find free Udemy courses.
                   </p>
                 </div>
               </div>
 
-              <div className="flex gap-4 rounded-lg border border-border p-4">
-                <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-primary/10">
-                  <span className="font-semibold text-primary">2</span>
+              <div className="flex gap-5 rounded-2xl border border-border bg-card p-5 transition-all duration-300 ease-[cubic-bezier(0.32,0.72,0,1)] hover:border-primary/25 hover:shadow-[0_8px_24px_-12px_color-mix(in_oklch,var(--primary)_25%,transparent)]">
+                <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-primary/15 font-bold text-primary">
+                  2
                 </div>
                 <div>
-                  <h3 className="font-semibold text-foreground">Verify & Enrich</h3>
-                  <p className="text-sm text-muted-foreground">
-                    We resolve coupon codes and verify each course links to a real Udemy page with an active coupon.
+                  <h3 className="font-semibold text-foreground">We Verify & Enrich</h3>
+                  <p className="text-sm leading-relaxed text-muted-foreground">
+                    Every course is validated and enriched with accurate category, difficulty, and description.
                   </p>
                 </div>
               </div>
 
-              <div className="flex gap-4 rounded-lg border border-border p-4">
-                <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-primary/10">
-                  <span className="font-semibold text-primary">3</span>
+              <div className="flex gap-5 rounded-2xl border border-border bg-card p-5 transition-all duration-300 ease-[cubic-bezier(0.32,0.72,0,1)] hover:border-primary/25 hover:shadow-[0_8px_24px_-12px_color-mix(in_oklch,var(--primary)_25%,transparent)]">
+                <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-primary/15 font-bold text-primary">
+                  3
                 </div>
                 <div>
-                  <h3 className="font-semibold text-foreground">AI Enhancement</h3>
-                  <p className="text-sm text-muted-foreground">
-                    We use AI to improve course descriptions and flag low-quality or suspicious listings.
+                  <h3 className="font-semibold text-foreground">You Enroll & Learn</h3>
+                  <p className="text-sm leading-relaxed text-muted-foreground">
+                    Browse verified coupons, click "Get Free Course", and start learning on Udemy instantly.
                   </p>
                 </div>
               </div>
 
-              <div className="flex gap-4 rounded-lg border border-border p-4">
-                <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-primary/10">
-                  <span className="font-semibold text-primary">4</span>
+              <div className="flex gap-5 rounded-2xl border border-border bg-card p-5 transition-all duration-300 ease-[cubic-bezier(0.32,0.72,0,1)] hover:border-primary/25 hover:shadow-[0_8px_24px_-12px_color-mix(in_oklch,var(--primary)_25%,transparent)]">
+                <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-primary/15 font-bold text-primary">
+                  4
                 </div>
                 <div>
-                  <h3 className="font-semibold text-foreground">Send to You</h3>
-                  <p className="text-sm text-muted-foreground">
-                    Subscribe to get daily emails with the best free courses, organized by category.
+                  <h3 className="font-semibold text-foreground">We Keep it Fresh</h3>
+                  <p className="text-sm leading-relaxed text-muted-foreground">
+                    Expired coupons are automatically removed. New deals appear daily — never miss one.
                   </p>
                 </div>
               </div>
