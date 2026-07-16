@@ -2,7 +2,7 @@ import { Suspense } from "react"
 import { getCourses, getFilterOptions, type SortOption } from "@/lib/queries"
 import { CourseCard } from "@/components/course-card"
 import { SearchFilters } from "@/components/search-filters"
-import { Pagination } from "@/components/pagination"
+
 import { SubscribeForm } from "@/components/subscribe-form"
 
 export const dynamic = "force-dynamic"
@@ -141,8 +141,6 @@ export default async function HomePage({
             </p>
           </div>
         )}
-
-        <Pagination page={page} pages={pages} searchParams={sp} />
       </section>
 
       {/* Subscribe CTA — double-bezel card */}

@@ -28,22 +28,22 @@ export function Pagination({
   start = Math.max(1, end - windowSize + 1)
   const numbers = Array.from({ length: end - start + 1 }, (_, i) => start + i)
 
-  const baseBtn =
-    "inline-flex h-10 min-w-10 items-center justify-center rounded-lg border px-3 text-sm font-medium transition"
+  const baseBtnClass =
+    "inline-flex h-10 min-w-10 items-center justify-center rounded-full px-4 text-sm font-medium transition-all duration-300 ease-[cubic-bezier(0.32,0.72,0,1)]"
 
   return (
-    <nav className="mt-10 flex items-center justify-center gap-2" aria-label="Pagination">
+    <nav className="mt-12 flex items-center justify-center gap-3" aria-label="Pagination">
       {page > 1 ? (
-        <Link href={hrefFor(page - 1)} className={`${baseBtn} border-border bg-card text-foreground hover:bg-secondary`}>
+        <Link href={hrefFor(page - 1)} className={`${baseBtnClass} border border-border bg-card text-foreground hover:border-primary/40 hover:bg-secondary/80`}>
           Previous
         </Link>
       ) : (
-        <span className={`${baseBtn} cursor-not-allowed border-border bg-muted text-muted-foreground opacity-60`}>
+        <span className={`${baseBtnClass} border border-border bg-muted text-muted-foreground cursor-not-allowed opacity-50`}>
           Previous
         </span>
       )}
 
-      {start > 1 && <span className="px-1 text-muted-foreground">…</span>}
+      {start > 1 && <span className="px-1 text-muted-foreground text-xs">…</span>}
 
       {numbers.map((n) => (
         <Link
@@ -52,22 +52,22 @@ export function Pagination({
           aria-current={n === page ? "page" : undefined}
           className={
             n === page
-              ? `${baseBtn} border-primary bg-primary text-primary-foreground`
-              : `${baseBtn} border-border bg-card text-foreground hover:bg-secondary`
+              ? `${baseBtnClass} border border-primary bg-primary text-primary-foreground shadow-[0_4px_12px_color-mix(in_oklch,var(--primary)_30%,transparent)] hover:brightness-95`
+              : `${baseBtnClass} border border-border bg-card text-foreground hover:border-primary/40 hover:bg-secondary/80`
           }
         >
           {n}
         </Link>
       ))}
 
-      {end < pages && <span className="px-1 text-muted-foreground">…</span>}
+      {end < pages && <span className="px-1 text-muted-foreground text-xs">…</span>}
 
       {page < pages ? (
-        <Link href={hrefFor(page + 1)} className={`${baseBtn} border-border bg-card text-foreground hover:bg-secondary`}>
+        <Link href={hrefFor(page + 1)} className={`${baseBtnClass} border border-border bg-card text-foreground hover:border-primary/40 hover:bg-secondary/80`}>
           Next
         </Link>
       ) : (
-        <span className={`${baseBtn} cursor-not-allowed border-border bg-muted text-muted-foreground opacity-60`}>
+        <span className={`${baseBtnClass} border border-border bg-muted text-muted-foreground cursor-not-allowed opacity-50`}>
           Next
         </span>
       )}
