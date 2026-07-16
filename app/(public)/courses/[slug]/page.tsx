@@ -171,7 +171,7 @@ export default async function CoursePage({
               ) : null}
             </div>
 
-            <div className="relative mt-6 aspect-video overflow-hidden rounded-xl border border-border bg-muted">
+            <div className="relative mt-6 aspect-video overflow-hidden rounded-2xl border border-border bg-muted shadow-[0_16px_40px_-20px_color-mix(in_oklch,var(--primary)_30%,transparent)]">
               {course.thumbnailUrl ? (
                 <Image
                   src={course.thumbnailUrl || "/placeholder.svg"}
@@ -202,8 +202,9 @@ export default async function CoursePage({
           </div>
 
           {/* Sidebar / CTA */}
-          <aside className="lg:sticky lg:top-20 lg:self-start">
-            <div className="rounded-xl border border-border bg-card p-5 shadow-sm">
+          <aside className="lg:sticky lg:top-24 lg:self-start">
+            <div className="rounded-[1.75rem] border border-border bg-secondary/50 p-1.5">
+            <div className="rounded-[calc(1.75rem-0.375rem)] bg-card p-5 shadow-[inset_0_1px_1px_rgba(255,255,255,0.06),0_12px_32px_-16px_color-mix(in_oklch,var(--primary)_25%,transparent)]">
               <div className="flex items-baseline gap-2">
                 <span className="text-3xl font-extrabold text-foreground">Free</span>
                 <span className="text-sm text-muted-foreground line-through">with coupon</span>
@@ -223,9 +224,11 @@ export default async function CoursePage({
               </div>
 
               {course.couponCode && (
-                <div className="mt-3 rounded-lg border border-dashed border-border px-3 py-2.5 text-center">
-                  <p className="text-xs text-muted-foreground">Coupon code</p>
-                  <p className="mt-0.5 font-mono text-sm font-bold tracking-wider text-foreground">
+                <div className="mt-3 rounded-2xl border border-dashed border-primary/40 bg-primary/5 px-3 py-3 text-center">
+                  <p className="text-[10px] font-medium uppercase tracking-[0.2em] text-muted-foreground">
+                    Coupon code
+                  </p>
+                  <p className="mt-1 font-mono text-sm font-bold tracking-[0.15em] text-primary">
                     {course.couponCode}
                   </p>
                 </div>
@@ -235,12 +238,14 @@ export default async function CoursePage({
                 href={`/go/${course.slug}`}
                 target="_blank"
                 rel="nofollow sponsored noopener"
-                className="mt-4 flex w-full items-center justify-center gap-2 rounded-lg bg-accent px-5 py-3.5 text-base font-bold text-accent-foreground shadow-sm transition hover:brightness-95"
+                className="group mt-4 flex w-full items-center justify-center gap-2.5 rounded-full bg-accent py-2.5 pl-6 pr-2.5 text-base font-bold text-accent-foreground shadow-sm transition-all duration-300 ease-[cubic-bezier(0.32,0.72,0,1)] hover:brightness-95 active:scale-[0.98]"
               >
                 Get Free Course
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" aria-hidden="true">
-                  <path d="M5 12h14M13 6l6 6-6 6" />
-                </svg>
+                <span className="flex h-9 w-9 items-center justify-center rounded-full bg-accent-foreground/10 transition-transform duration-300 ease-[cubic-bezier(0.32,0.72,0,1)] group-hover:-translate-y-[1px] group-hover:translate-x-0.5 group-hover:scale-105">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" aria-hidden="true">
+                    <path d="M7 17 17 7M9 7h8v8" />
+                  </svg>
+                </span>
               </a>
 
               <p className="mt-3 text-center text-xs text-muted-foreground">
@@ -250,6 +255,7 @@ export default async function CoursePage({
               <div className="mt-4 border-t border-border pt-4 text-center">
                 <ReportExpiredButton courseId={course.id} className="mx-auto" />
               </div>
+            </div>
             </div>
           </aside>
         </div>
