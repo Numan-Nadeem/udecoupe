@@ -2,6 +2,7 @@
 
 import { useRouter, useSearchParams } from "next/navigation"
 import { useEffect, useRef, useState } from "react"
+import { CustomSelect } from "./custom-select"
 
 export function SearchFilters({
   categories,
@@ -47,9 +48,6 @@ export function SearchFilters({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [search])
 
-  const selectClass =
-    "rounded-full border border-border bg-card px-4 py-2.5 pr-10 text-sm text-card-foreground shadow-sm outline-none transition-all duration-300 ease-[cubic-bezier(0.32,0.72,0,1)] focus:border-primary/40 focus:ring-2 focus:ring-primary/20 cursor-pointer hover:border-primary/25 appearance-none bg-no-repeat bg-right"
-
   return (
     <div className="flex flex-col gap-3 lg:flex-row lg:items-center">
       <div className="relative flex-1">
@@ -77,44 +75,39 @@ export function SearchFilters({
       </div>
 
       <div className="flex flex-wrap gap-3">
-        <select
+        <CustomSelect
           value={category}
-          onChange={(e) => update({ category: e.target.value })}
-          className={selectClass}
-          aria-label="Filter by category"
-        >
-          <option value="">All categories</option>
-          {categories.map((c) => (
-            <option key={c} value={c}>
-              {c}
-            </option>
-          ))}
-        </select>
+          onChange={(value) => update({ category: value })}
+          options={[
+            { value: "", label: "All categories" },
+            ...categories.map((c) => ({ value: c, label: c })),
+          ]}
+          placeholder="All categories"
+          className="w-full sm:w-auto"
+        />
 
-        <select
+        <CustomSelect
           value={difficulty}
-          onChange={(e) => update({ difficulty: e.target.value })}
-          className={selectClass}
-          aria-label="Filter by difficulty"
-        >
-          <option value="">All levels</option>
-          {difficulties.map((d) => (
-            <option key={d} value={d}>
-              {d}
-            </option>
-          ))}
-        </select>
+          onChange={(value) => update({ difficulty: value })}
+          options={[
+            { value: "", label: "All levels" },
+            ...difficulties.map((d) => ({ value: d, label: d })),
+          ]}
+          placeholder="All levels"
+          className="w-full sm:w-auto"
+        />
 
-        <select
+        <CustomSelect
           value={sort}
-          onChange={(e) => update({ sort: e.target.value })}
-          className={selectClass}
-          aria-label="Sort courses"
-        >
-          <option value="newest">Newest</option>
-          <option value="expiring">Expiring soon</option>
-          <option value="rating">Highest rated</option>
-        </select>
+          onChange={(value) => update({ sort: value })}
+          options={[
+            { value: "newest", label: "Newest" },
+            { value: "expiring", label: "Expiring soon" },
+            { value: "rating", label: "Highest rated" },
+          ]}
+          placeholder="Sort by"
+          className="w-full sm:w-auto"
+        />
       </div>
     </div>
   )
