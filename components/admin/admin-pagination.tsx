@@ -28,20 +28,20 @@ export function AdminPagination({
         {page > 1 && (
           <Link
             href={href(page - 1)}
-            className="rounded-full border border-border px-4 py-2 text-sm font-medium text-foreground transition-all duration-300 ease-[cubic-bezier(0.32,0.72,0,1)] hover:border-primary/40 hover:bg-secondary/80"
+            className="rounded-lg border border-border px-3 py-1.5 text-sm font-medium text-foreground transition hover:bg-secondary"
           >
             Previous
           </Link>
         )}
       </div>
-      <span className="text-sm font-medium text-muted-foreground">
+      <span className="text-sm text-muted-foreground">
         Page {page} of {totalPages}
       </span>
       <div>
         {page < totalPages && (
           <Link
             href={href(page + 1)}
-            className="rounded-full border border-border px-4 py-2 text-sm font-medium text-foreground transition-all duration-300 ease-[cubic-bezier(0.32,0.72,0,1)] hover:border-primary/40 hover:bg-secondary/80"
+            className="rounded-lg border border-border px-3 py-1.5 text-sm font-medium text-foreground transition hover:bg-secondary"
           >
             Next
           </Link>
