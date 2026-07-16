@@ -2,7 +2,7 @@ import { Suspense } from "react"
 import { getCourses, getFilterOptions, type SortOption } from "@/lib/queries"
 import { CourseCard } from "@/components/course-card"
 import { SearchFilters } from "@/components/search-filters"
-
+import { Pagination } from "@/components/pagination"
 import { SubscribeForm } from "@/components/subscribe-form"
 
 export const dynamic = "force-dynamic"
@@ -120,11 +120,18 @@ export default async function HomePage({
         </div>
 
         {courses.length > 0 ? (
-          <div className="mt-5 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
-            {courses.map((course) => (
-              <CourseCard key={course.id} course={course} />
-            ))}
-          </div>
+          <>
+            <div className="mt-5 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
+              {courses.map((course) => (
+                <CourseCard key={course.id} course={course} />
+              ))}
+            </div>
+            {pages > 1 && (
+              <div className="mt-10 flex justify-center">
+                <Pagination currentPage={page} totalPages={pages} />
+              </div>
+            )}
+          </>
         ) : (
           <div className="mt-10 flex flex-col items-center justify-center rounded-xl border border-dashed border-border bg-card py-16 text-center">
             <div className="flex h-14 w-14 items-center justify-center rounded-full bg-secondary text-muted-foreground">
