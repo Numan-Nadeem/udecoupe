@@ -48,7 +48,7 @@ export function SearchFilters({
   }, [search])
 
   const selectClass =
-    "rounded-lg border border-border bg-card px-3 py-2.5 text-sm text-card-foreground shadow-sm outline-none transition focus:border-ring focus:ring-2 focus:ring-ring/30"
+    "rounded-full border border-border bg-card px-4 py-2.5 text-sm text-card-foreground shadow-sm outline-none transition-all duration-300 ease-[cubic-bezier(0.32,0.72,0,1)] focus:border-ring focus:ring-2 focus:ring-ring/30"
 
   return (
     <div className="flex flex-col gap-3 lg:flex-row lg:items-center">
@@ -71,7 +71,7 @@ export function SearchFilters({
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           placeholder="Search courses, instructors, topics…"
-          className="w-full rounded-lg border border-border bg-card py-2.5 pl-10 pr-4 text-sm text-card-foreground shadow-sm outline-none transition focus:border-ring focus:ring-2 focus:ring-ring/30"
+          className="w-full rounded-full border border-border bg-card py-2.5 pl-10 pr-4 text-sm text-card-foreground shadow-sm outline-none transition-all duration-300 ease-[cubic-bezier(0.32,0.72,0,1)] focus:border-ring focus:ring-2 focus:ring-ring/30"
           aria-label="Search courses"
         />
       </div>
